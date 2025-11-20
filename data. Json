@@ -1,0 +1,57 @@
+{
+  "stats": {
+    "members": 500,
+    "helped": 1000,
+    "resources": 350
+  },
+  "updates": [
+    {
+      "date": "2025-11-12",
+      "html": "NATIONAL SCHOLARSHIP (NSP) PORTAL IS NOW OPEN <a href='https://scholarships.gov.in/Students'>Apply</a>"
+    },
+    {
+      "date": "2025-11-01",
+      "html": "HS SEM-3 Answer Key 2025-2026 <a href='https://drive.google.com'>Open</a>"
+    }
+  ],
+  "langBooks": [
+    {
+      "title": "Urdu Guide Semester 4",
+      "link": "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/assets/pdfs/urdu-sem4.pdf"
+    }
+  ],
+  "compBooks": [
+    {
+      "title": "History - Class 12 Notes",
+      "link": "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/assets/pdfs/history12.pdf"
+    }
+  ],
+  "specialBooks": [
+    {
+      "title": "Extra Reference Book",
+      "link": "https://drive.google.com/your-shared-link"
+    }
+  ],
+  "examRoutine": [
+    {
+      "date": "2025-11-10",
+      "title": "Amaan Classes - November Test Routine",
+      "note": "Check paper-wise timing and venue",
+      "link": "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/assets/images/routine-nov.jpg"
+    }
+  ],
+  "contributors": [
+    "Samya Wahid",
+    "Naaz Fatema",
+    "Isha"
+  ],
+  "slider": [
+    "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/assets/slides/slide1.jpg",
+    "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/assets/slides/slide2.jpg"
+  ],
+  "repo": {
+    "owner": "wbstudentsgroup",
+    "name": "wbstudentsgroup",
+    "path": "data.json"
+  }
+}
