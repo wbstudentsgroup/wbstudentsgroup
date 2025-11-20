@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>WB Students Group — IYR (GitHub Pages)</title>
+<meta name="description" content="WB Students Group — notes, books, exam routines, contributors. Admin panel for maintaining data.json (GitHub Pages workflow).">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --accent:#ffcc00; --accent-2:#ffd36b; --bg1:#041731; --bg2:#071126;
+    --muted:rgba(190,210,235,0.78); --card:rgba(255,255,255,0.03);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#eaf4ff;
+    -webkit-font-smoothing:antialiased;padding:18px;
+  }
+  .wrap{max-width:1100px;margin:0 auto}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  h1{margin:4px 0;color:var(--accent);font-size:1.3rem}
+  .muted{color:var(--muted);font-size:0.95rem}
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:14px;margin-top:14px}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 12px 34px rgba(2,8,30,0.45)}
+  .tabs{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .tab{padding:8px 10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:var(--muted);font-weight:700}
+  .tab.active{background:linear-gradient(90deg,#0a74da,var(--accent));color:#071126;transform:translateY(-2px)}
+  .list-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.012), rgba(255,255,255,0.006));margin-bottom:10px}
+  .open-btn{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#071126;padding:8px 10px;border-radius:8px;text-decoration:none;font-weight:800}
+  .small{font-size:0.9rem;color:var(--muted)}
+  /* Slider */
+  .image-slider{margin:18px auto;text-align:center}
+  .slider-container{position:relative;width:100%;max-width:760px;height:380px;margin:0 auto;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 40px rgba(2,8,30,0.6)}
+  .slider-container img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.02);transition:opacity 900ms ease, transform 900ms ease}
+  .slider-container img.active{opacity:1;transform:scale(1)}
+  .slider-dots{margin-top:10px}
+  .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.15);margin:0 6px;cursor:pointer;transition:transform .18s}
+  .dot.active{background:#071126;transform:scale(1.05);box-shadow:0 6px 18px rgba(0,0,0,0.4)}
+  /* Admin panel */
+  #adminPanel{position:fixed;right:16px;top:84px;width:420px;max-width:calc(100% - 32px);display:none;z-index:9999}
+  #adminPanel .card{padding:12px}
+  .form-row{display:flex;gap:8px;margin-top:8px}
+  input[type="text"], input[type="date"], textarea, select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+  button{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#071126;font-weight:800}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+  textarea{min-height:68px}
+  pre.jsonOut{background:rgba(0,0,0,0.2);padding:8px;border-radius:8px;color:#e6f6ff;max-height:260px;overflow:auto}
+  footer{margin-top:18px;text-align:center;color:rgba(200,220,255,0.6);font-size:0.9rem}
+  /* small responsive tweaks */
+  @media(max-width:560px){ .slider-container{height:260px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>WB Students Group</h1>
+      <div class="muted">Notes, PDFs, routines — managed via GitHub Pages + data.json (free)</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button id="adminToggle" class="btn-ghost" title="Open admin">Admin</button>
+      <a id="waLink" href="https://wa.me/9330395465?text=Join%20me%20in%20Wb%20students%20group" target="_blank" class="btn-ghost">WhatsApp</a>
+    </div>
+  </header>
+
+  <div class="grid">
+    <main>
+      <!-- Slider -->
+      <section class="card image-slider" aria-label="Image slider">
+        <h2 style="margin:0 0 8px 0">Highlighted Materials</h2>
+        <div id="sliderContainer" class="slider-container" aria-hidden="false"></div>
+        <div id="sliderDots" class="slider-dots"></div>
+      </section>
+
+      <!-- Latest -->
+      <section id="latest" class="card" aria-labelledby="latestTitle">
+        <h2 id="latestTitle" style="margin:0 0 8px 0">Latest Updates</h2>
+        <div id="updatesList" class="small">Loading updates...</div>
+      </section>
+
+      <!-- Books -->
+      <section id="books" class="card" style="margin-top:14px">
+        <h2 style="margin:0 0 8px 0">Books & Free Material</h2>
+        <div class="tabs" role="tablist" id="bookTabs">
+          <button class="tab" data-target="langBooks" role="tab">Language</button>
+          <button class="tab" data-target="compBooks" role="tab">Compulsory</button>
+          <button class="tab" data-target="specialBooks" role="tab">Special</button>
+        </div>
+        <div id="booksArea" style="margin-top:10px"></div>
+      </section>
+
+      <!-- Routines -->
+      <section id="routines" class="card" style="margin-top:14px">
+        <h2 style="margin:0 0 8px 0">Exam Routines</h2>
+        <div id="routineList" class="small">Loading routines...</div>
+      </section>
+
+      <!-- Contributors -->
+      <section id="contributors" class="card" style="margin-top:14px">
+        <h2 style="margin:0 0 8px 0">Top Contributors</h2>
+        <div id="contribList" class="small">Loading contributors...</div>
+      </section>
+    </main>
+
+    <aside>
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Student Corner</h3>
+        <div class="small">Quick actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+          <a class="open-btn" id="uploadFormLink" href="https://form.svhrt.com/690621a211a1c2ba8ca8e8a0" target="_blank">Upload Result (Form)</a>
+          <button id="reportAdmin" class="btn-ghost">Report to Admin</button>
+        </div>
+        <div style="margin-top:12px">
+          <label class="small">Local quick submit (offline fallback)</label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input id="localResultName" type="text" placeholder="Your name">
+            <button id="localSubmit">Submit</button>
+          </div>
+          <div id="localMsg" class="small" style="margin-top:8px;display:none"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h3 style="margin:0 0 8px 0">Repo / Publish</h3>
+        <div class="small">After editing in Admin: Copy JSON → open GitHub edit for <code>data.json</code> → paste & commit.</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="openGitHubEdit" class="btn-ghost">Open GitHub Edit</button>
+          <button id="downloadJSON" class="btn-ghost">Download JSON</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>© <span id="year"></span> WB Students Group · Managed by Yusuf Khan</footer>
+</div>
+
+<!-- Admin Panel -->
+<div id="adminPanel">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h3 style="margin:0;color:var(--accent)">Admin Panel</h3>
+        <div class="small">Local preview only — commit to GitHub to publish</div>
+      </div>
+      <div>
+        <button id="adminClose" class="btn-ghost">Close</button>
+      </div>
+    </div>
+
+    <!-- Add Book -->
+    <div style="margin-top:12px">
+      <label class="small">Add Book / Resource</label>
+      <div class="form-row">
+        <select id="adminBookSection">
+          <option value="langBooks">Language</option>
+          <option value="compBooks">Compulsory</option>
+          <option value="specialBooks">Special</option>
+        </select>
+        <input id="adminBookTitle" type="text" placeholder="Title">
+      </div>
+      <div class="form-row" style="margin-top:8px">
+        <input id="adminBookLink" type="text" placeholder="Link (raw GitHub or Drive)">
+        <button id="adminAddBook">Add Book</button>
+      </div>
+    </div>
+
+    <!-- Add Routine -->
+    <div style="margin-top:12px">
+      <label class="small">Add Exam Routine</label>
+      <div class="form-row">
+        <input id="adminRoutineDate" type="date">
+        <input id="adminRoutineTitle" type="text" placeholder="Title">
+      </div>
+      <div class="form-row" style="margin-top:8px">
+        <input id="adminRoutineLink" type="text" placeholder="Link (image/pdf)">
+        <button id="adminAddRoutine">Add Routine</button>
+      </div>
+      <div style="margin-top:8px">
+        <textarea id="adminRoutineNote" placeholder="Note / timing / remarks"></textarea>
+      </div>
+    </div>
+
+    <!-- Add Update -->
+    <div style="margin-top:12px">
+      <label class="small">Add Latest Update (HTML allowed)</label>
+      <div class="form-row">
+        <input id="adminUpdateDate" type="date">
+        <input id="adminUpdateText" type="text" placeholder='Text or HTML (e.g., "Apply <a...>")'>
+        <button id="adminAddUpdate">Add</button>
+      </div>
+    </div>
+
+    <!-- Add Slide Image -->
+    <div style="margin-top:12px">
+      <label class="small">Add Slide Image (paste raw URL)</label>
+      <div class="form-row">
+        <input id="adminSlideUrl" type="text" placeholder="Raw image URL (raw.githubusercontent...)">
+        <button id="adminAddSlide">Add Slide</button>
+      </div>
+    </div>
+
+    <!-- Add Contributor -->
+    <div style="margin-top:12px">
+      <label class="small">Add Contributor</label>
+      <div class="form-row">
+        <input id="adminContribName" type="text" placeholder="Name">
+        <button id="adminAddContrib">Add</button>
+      </div>
+    </div>
+
+    <!-- Counters -->
+    <div style="margin-top:12px">
+      <label class="small">Update Counters</label>
+      <div class="form-row">
+        <input id="adminStatMembers" type="text" placeholder="Members number">
+        <input id="adminStatHelped" type="text" placeholder="Students helped">
+      </div>
+      <div class="form-row" style="margin-top:8px">
+        <input id="adminStatResources" type="text" placeholder="Resources count">
+        <button id="adminUpdateStats">Update</button>
+      </div>
+    </div>
+
+    <!-- JSON Preview & actions -->
+    <div style="margin-top:12px">
+      <label class="small">Generated data.json preview</label>
+      <pre id="jsonPreview" class="jsonOut"></pre>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button id="copyJSON" class="btn-ghost">Copy JSON</button>
+        <button id="downloadJSONBtn" class="btn-ghost">Download JSON</button>
+        <button id="openGitHubEditBtn" class="btn-ghost">Open GitHub Edit</button>
+      </div>
+    </div>
+
+    <div style="margin-top:8px">
+      <button id="adminLogout" class="btn-ghost">Logout (clear session)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== CONFIG (change here if needed) ====== */
+const ADMIN_PASSWORD = 'iyradmin'; // change if you want; this is client-side convenience only
+const DATA_PATH = './data.json';   // relative path to data.json in repo
+const AUTO_SLIDE_INTERVAL = 3500;
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* ====== SAMPLE fallback data (used only if data.json missing) ====== */
+const SAMPLE_DATA = {
+  stats:{members:500,helped:1000,resources:350},
+  updates:[{date:"2025-11-12",html:"NATIONAL SCHOLARSHIP (NSP) PORTAL IS NOW OPEN <a href='https://scholarships.gov.in/Students'>Apply</a>"}],
+  langBooks:[{title:"Urdu Guide Semester 4",link:"#"}],
+  compBooks:[{title:"History - Class 12 Notes",link:"#"}],
+  specialBooks:[{title:"Extra Book",link:"#"}],
+  examRoutine:[{date:"2025-11-10",title:"Amaan Classes - Nov Routine",note:"Check timing",link:"#"}],
+  contributors:["Samya Wahid","Naaz Fatema","Isha"],
+  slider:[],
+  repo:{owner:"YOUR_GITHUB_USERNAME",name:"YOUR_REPO",path:"data.json"}
+};
+
+/* ====== App state ====== */
+let DATA = null;
+let sliderInterval = null;
+let currentSlideIndex = 0;
+
+/* ====== DOM refs ====== */
+const updatesList = document.getElementById('updatesList');
+const booksArea = document.getElementById('booksArea');
+const routineList = document.getElementById('routineList');
+const contribList = document.getElementById('contribList');
+const sliderContainer = document.getElementById('sliderContainer');
+const sliderDots = document.getElementById('sliderDots');
+const adminPanel = document.getElementById('adminPanel');
+
+/* ====== helpers ====== */
+const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function humanDate(iso){ try{ return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){return iso;} }
+
+/* ====== load data.json or fallback ====== */
+async function loadData(){
+  try {
+    const r = await fetch(DATA_PATH + '?t=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) throw new Error('no data.json');
+    DATA = await r.json();
+  } catch(e){
+    console.warn('Using SAMPLE_DATA as data.json not found.', e);
+    DATA = JSON.parse(JSON.stringify(SAMPLE_DATA));
+  }
+  DATA.stats = DATA.stats || SAMPLE_DATA.stats;
+  DATA.updates = DATA.updates || [];
+  DATA.langBooks = DATA.langBooks || [];
+  DATA.compBooks = DATA.compBooks || [];
+  DATA.specialBooks = DATA.specialBooks || [];
+  DATA.examRoutine = DATA.examRoutine || [];
+  DATA.contributors = DATA.contributors || [];
+  DATA.slider = DATA.slider || [];
+  DATA.repo = DATA.repo || SAMPLE_DATA.repo;
+}
+
+/* ====== render functions ====== */
+function renderUpdates(){
+  updatesList.innerHTML = '';
+  if(!DATA.updates.length){ updatesList.textContent = 'No updates yet.'; return; }
+  DATA.updates.slice().reverse().forEach(u=>{
+    const d = humanDate(u.date || '');
+    const div = document.createElement('div'); div.className='list-row';
+    div.innerHTML = `<div style="min-width:120px;font-weight:800;color:var(--muted)">${d}</div><div style="flex:1">${u.html || esc(u.text || '')}</div>`;
+    updatesList.appendChild(div);
+  });
+}
+function renderBooks(){
+  booksArea.innerHTML = '';
+  const sections = [{id:'langBooks',title:'Language',arr:DATA.langBooks},{id:'compBooks',title:'Compulsory',arr:DATA.compBooks},{id:'specialBooks',title:'Special',arr:DATA.specialBooks}];
+  sections.forEach(sec=>{
+    const container = document.createElement('div'); container.id = sec.id; container.style.display='none';
+    (sec.arr||[]).forEach(item=>{
+      const r = document.createElement('div'); r.className='list-row';
+      r.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--accent)">📄</div>
+        <div><div style="font-weight:800">${esc(item.title)}</div><div class="small" style="margin-top:6px">Free material</div></div></div>
+        <a class="open-btn" href="${item.link||'#'}" target="_blank" rel="noopener">Open</a>`;
+      container.appendChild(r);
+    });
+    booksArea.appendChild(container);
+  });
+  const first = document.querySelector('.tab[data-target="langBooks"]'); if(first){first.classList.add('active'); document.getElementById('langBooks').style.display='block';}
+}
+function renderRoutines(){
+  routineList.innerHTML = '';
+  if(!DATA.examRoutine.length){ routineList.textContent = 'No routines yet.'; return; }
+  DATA.examRoutine.slice().reverse().forEach(r=>{
+    const d = humanDate(r.date||'');
+    const el = document.createElement('div'); el.className='list-row';
+    el.innerHTML = `<div style="min-width:120px;font-weight:800;color:var(--muted)">${d}</div><div style="flex:1"><div style="font-weight:800;color:var(--accent)">${esc(r.title)}</div><div class="small" style="margin-top:6px">${esc(r.note||'')}</div></div><a class="open-btn" href="${r.link||'#'}" target="_blank">Open</a>`;
+    routineList.appendChild(el);
+  });
+}
+function renderContrib(){
+  contribList.innerHTML = '';
+  if(!DATA.contributors.length){ contribList.textContent = 'No contributors yet.'; return; }
+  DATA.contributors.forEach((c,i)=>{
+    const el = document.createElement('div'); el.className='list-row';
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:8px;background:${i===0?'linear-gradient(180deg,#ffd36b,#ffb400)':i===1?'linear-gradient(180deg,#cfcfcf,#9fa6b2)':'linear-gradient(180deg,#e6a46c,#b87442)'};display:flex;align-items:center;justify-content:center;font-weight:900;color:#071126">${i+1}</div><div style="font-weight:800">${esc(c)}</div></div>`;
+    contribList.appendChild(el);
+  });
+}
+
+/* ===== Slider ===== */
+function renderSlider(){
+  sliderContainer.innerHTML = ''; sliderDots.innerHTML = '';
+  if(!DATA.slider || DATA.slider.length === 0){ sliderContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">No slides set</div>'; return; }
+  DATA.slider.forEach((src,i)=>{
+    const img = document.createElement('img'); img.src = src; if(i===0) img.classList.add('active');
+    sliderContainer.appendChild(img);
+    const dot = document.createElement('span'); dot.className = 'dot' + (i===0 ? ' active':'' ); dot.onclick = ()=> goToSlide(i);
+    sliderDots.appendChild(dot);
+  });
+  currentSlideIndex = 0;
+  if(sliderInterval) clearInterval(sliderInterval);
+  sliderInterval = setInterval(()=> {
+    if(!DATA.slider || DATA.slider.length === 0) return;
+    goToSlide((currentSlideIndex+1) % DATA.slider.length);
+  }, AUTO_SLIDE_INTERVAL);
+}
+function goToSlide(n){
+  const imgs = sliderContainer.querySelectorAll('img'); const dots = sliderDots.querySelectorAll('.dot');
+  if(imgs.length===0) return;
+  imgs[currentSlideIndex]?.classList.remove('active'); dots[currentSlideIndex]?.classList.remove('active');
+  currentSlideIndex = n;
+  imgs[currentSlideIndex]?.classList.add('active'); dots[currentSlideIndex]?.classList.add('active');
+}
+
+/* ===== Tabs ===== */
+document.getElementById('bookTabs').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tab'); if(!btn) return;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+  const target = btn.getAttribute('data-target'); document.querySelectorAll('#booksArea > div').forEach(div=>div.style.display = div.id===target ? 'block' : 'none');
+});
+
+/* ===== Admin UI behavior ===== */
+function showAdminPanel(){ adminPanel.style.display='block'; sessionStorage.setItem('wb_admin_auth','1'); adminToggle.textContent='Admin (On)'; updateJSONPreview(); }
+function hideAdminPanel(){ adminPanel.style.display='none'; adminToggle.textContent='Admin'; }
+
+document.getElementById('adminToggle').addEventListener('click', ()=>{
+  if(sessionStorage.getItem('wb_admin_auth')==='1'){ showAdminPanel(); return; }
+  const p = prompt('Admin password:'); if(p===null) return;
+  if(p===ADMIN_PASSWORD){ showAdminPanel(); } else alert('Incorrect password');
+});
+document.getElementById('adminClose').addEventListener('click', hideAdminPanel);
+document.getElementById('adminLogout').addEventListener('click', ()=>{ sessionStorage.removeItem('wb_admin_auth'); hideAdminPanel(); alert('Logged out'); });
+
+/* Admin actions */
+document.getElementById('adminAddBook').addEventListener('click', ()=>{
+  const section = document.getElementById('adminBookSection').value; const title = document.getElementById('adminBookTitle').value.trim(); const link = document.getElementById('adminBookLink').value.trim() || '#';
+  if(!title){ alert('Enter title'); return; }
+  DATA[section] = DATA[section] || []; DATA[section].unshift({title,link});
+  document.getElementById('adminBookTitle').value=''; document.getElementById('adminBookLink').value=''; renderBooks(); updateJSONPreview(); alert('Book added (preview).');
+});
+document.getElementById('adminAddRoutine').addEventListener('click', ()=>{
+  const date = document.getElementById('adminRoutineDate').value; const title = document.getElementById('adminRoutineTitle').value.trim(); const note = document.getElementById('adminRoutineNote').value.trim(); const link = document.getElementById('adminRoutineLink').value.trim()||'#';
+  if(!date || !title){ alert('Choose date and enter title'); return; }
+  DATA.examRoutine.unshift({date,title,note,link}); document.getElementById('adminRoutineDate').value=''; document.getElementById('adminRoutineTitle').value=''; document.getElementById('adminRoutineNote').value=''; document.getElementById('adminRoutineLink').value=''; renderRoutines(); updateJSONPreview(); alert('Routine added (preview).');
+});
+document.getElementById('adminAddUpdate').addEventListener('click', ()=>{
+  const date = document.getElementById('adminUpdateDate').value || new Date().toISOString().slice(0,10); const text = document.getElementById('adminUpdateText').value.trim();
+  if(!text){ alert('Enter update'); return; }
+  DATA.updates.unshift({date,html:text}); document.getElementById('adminUpdateDate').value=''; document.getElementById('adminUpdateText').value=''; renderUpdates(); updateJSONPreview(); alert('Update added (preview).');
+});
+document.getElementById('adminAddSlide').addEventListener('click', ()=>{
+  const url = document.getElementById('adminSlideUrl').value.trim(); if(!url){ alert('Enter image URL'); return; }
+  DATA.slider = DATA.slider || []; DATA.slider.unshift(url); document.getElementById('adminSlideUrl').value=''; renderSlider(); updateJSONPreview(); alert('Slide added (preview). Upload image to repo first.');
+});
+document.getElementById('adminAddContrib').addEventListener('click', ()=>{
+  const name = document.getElementById('adminContribName').value.trim(); if(!name){ alert('Enter name'); return; }
+  DATA.contributors.unshift(name); document.getElementById('adminContribName').value=''; renderContrib(); updateJSONPreview(); alert('Contributor added (preview).');
+});
+document.getElementById('adminUpdateStats').addEventListener('click', ()=>{
+  const m = Number(document.getElementById('adminStatMembers').value) || DATA.stats.members; const h = Number(document.getElementById('adminStatHelped').value) || DATA.stats.helped; const r = Number(document.getElementById('adminStatResources').value) || DATA.stats.resources;
+  DATA.stats = {members:m,helped:h,resources:r}; document.getElementById('adminStatMembers').value=''; document.getElementById('adminStatHelped').value=''; document.getElementById('adminStatResources').value=''; updateJSONPreview(); alert('Counters updated (preview).');
+});
+
+/* JSON preview / copy / download / open GitHub edit */
+const jsonPreview = document.getElementById('jsonPreview');
+function updateJSONPreview(){
+  const obj = { stats:DATA.stats, updates:DATA.updates, langBooks:DATA.langBooks, compBooks:DATA.compBooks, specialBooks:DATA.specialBooks, examRoutine:DATA.examRoutine, contributors:DATA.contributors, slider:DATA.slider, repo:DATA.repo||{owner:'',name:'',path:'data.json'} };
+  jsonPreview.textContent = JSON.stringify(obj,null,2);
+}
+document.getElementById('copyJSON').addEventListener('click', async ()=>{
+  try{ await navigator.clipboard.writeText(jsonPreview.textContent); alert('Copied JSON to clipboard. Paste in GitHub data.json and commit.'); }catch(e){ alert('Copy failed — select and copy manually.'); }
+});
+document.getElementById('downloadJSONBtn').addEventListener('click', ()=>{
+  const blob = new Blob([jsonPreview.textContent], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='data.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+function openGitHubEdit(){
+  const repo = DATA.repo||{}; if(repo.owner && repo.name){ const url = `https://github.com/${repo.owner}/${repo.name}/edit/main/${repo.path||'data.json'}`; window.open(url,'_blank'); return; }
+  const owner = prompt('Enter GitHub owner (username):'); if(!owner) return; const name = prompt('Enter repo name:'); if(!name) return; window.open(`https://github.com/${owner}/${name}/edit/main/data.json`,'_blank');
+}
+document.getElementById('openGitHubEditBtn').addEventListener('click', openGitHubEdit);
+document.getElementById('openGitHubEdit').addEventListener('click', openGitHubEdit);
+
+/* Student quick features */
+document.getElementById('localSubmit').addEventListener('click', ()=>{
+  const name = document.getElementById('localResultName').value.trim(); if(!name){ alert('Enter name'); return; }
+  const arr = JSON.parse(localStorage.getItem('wb_local_submits')||'[]'); arr.push({name,at:new Date().toISOString()}); localStorage.setItem('wb_local_submits',JSON.stringify(arr)); document.getElementById('localMsg').style.display='block'; document.getElementById('localMsg').textContent='Submitted locally — thank you.'; document.getElementById('localResultName').value='';
+});
+document.getElementById('reportAdmin').addEventListener('click', ()=>{ const msg = prompt('Write your report message:'); if(msg) window.open('https://wa.me/9330395465?text='+encodeURIComponent(msg),'_blank'); });
+
+/* ====== Initialization ====== */
+(async function init(){
+  // auto-admin via URL param ?admin_pwd=iyradmin (convenience) — URL cleaned immediately
+  try {
+    const params = new URLSearchParams(window.location.search); const pwd = params.get('admin_pwd') || params.get('pwd') || params.get('admin');
+    if(pwd && pwd === ADMIN_PASSWORD){ sessionStorage.setItem('wb_admin_auth','1'); const url = new URL(window.location.href); url.searchParams.delete('admin_pwd'); url.searchParams.delete('pwd'); url.searchParams.delete('admin'); window.history.replaceState({}, document.title, url.pathname + url.search + url.hash); setTimeout(showAdminPanel, 300); }
+  } catch(e){}
+
+  await loadData();
+  renderSlider(); renderUpdates(); renderBooks(); renderRoutines(); renderContrib(); updateJSONPreview();
+})();
+</script>
+</body>
+</html>
